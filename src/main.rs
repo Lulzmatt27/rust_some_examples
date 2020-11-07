@@ -46,16 +46,21 @@ fn with_ref_count(){
     let counter = Arc::new(Mutex::new(0));
     let mut threads = vec![];
 
-    for _ in 0..5{
+    for i in 0..10{
         let counter = Arc::clone(&counter);
-        let handle = thread::spawn(move ||{
+        let handle = thread::spawn(move || {
+            println!("Executing from thread: {}", i);
             let mut num_guard = (*counter).lock().unwrap();
-            *num_guard +=1;
+            if *num_guard < 5{
+                thread::sleep(Duration::from_millis(1));
+                *num_guard +=1;
+            }
         });
         threads.push(handle);
     }
-    for thrd in threads{
-        thrd.join().unwrap();
+    
+    for thread in threads{
+        thread.join().unwrap();
     }
     println!("Result: {}", *counter.lock().unwrap());
 }
